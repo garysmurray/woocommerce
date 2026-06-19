@@ -335,6 +335,9 @@ class WC_Install {
 		'10.9.0'   => array(
 			'wc_update_1090_remove_task_list_reminder_bar_hidden_option',
 		),
+		'11.0.0'   => array(
+			'wc_update_1100_enable_point_of_sale_feature',
+		),
 	);
 
 	/**
@@ -746,18 +749,16 @@ class WC_Install {
 	}
 
 	/**
-	 * Check if all the base tables are present.
+	 * Get the names of any missing WooCommerce base tables.
 	 *
-	 * @param bool $modify_notice Whether to modify notice based on if all tables are present.
-	 * @param bool $execute       Whether to execute get_schema queries as well.
+	 * Unlike verify_base_tables(), this method has no side effects: it only inspects
+	 * the database and reports which required tables are missing.
 	 *
-	 * @return array List of queries.
+	 * @since 11.0.0
+	 *
+	 * @return string[] List of missing table names.
 	 */
-	public static function verify_base_tables( $modify_notice = true, $execute = false ) {
-		if ( $execute ) {
-			self::create_tables();
-		}
-
+	public static function get_missing_base_tables(): array {
 		$schema = self::get_schema();
 
 		$hpos_settings = filter_var_array(
@@ -776,14 +777,27 @@ class WC_Install {
 				->get_database_schema();
 		}
 
-		$missing_tables = wc_get_container()
+		return wc_get_container()
 			->get( DatabaseUtil::class )
 			->get_missing_tables( $schema );
+	}
+
+	/**
+	 * Check if all the base tables are present, updating the stored schema status accordingly.
+	 *
+	 * @param bool $modify_notice Whether to modify notice based on if all tables are present.
+	 * @param bool $execute       Whether to execute get_schema queries as well.
+	 *
+	 * @return string[] List of missing table names.
+	 */
+	public static function verify_base_tables( $modify_notice = true, $execute = false ) {
+		if ( $execute ) {
+			self::create_tables();
+		}
+
+		$missing_tables = self::get_missing_base_tables();
 
 		if ( 0 < count( $missing_tables ) ) {
-			if ( $modify_notice ) {
-				WC_Admin_Notices::add_notice( 'base_tables_missing' );
-			}
 			update_option( 'woocommerce_schema_missing_tables', $missing_tables );
 		} else {
 			if ( $modify_notice ) {
@@ -1751,7 +1765,10 @@ class WC_Install {
 
 		// Stock Notifications Table Schema.
 		$stock_notifications_table_schema = wc_get_container()->get( StockNotificationsDataStore::class )->get_database_schema();
-		$order_stats_table_schema         = self::get_order_stats_table_schema( $collate );
+
+		// Email Unsubscribes table — generic across email types; each row pairs an email hash with an email-kind identifier.
+		$email_unsubscribes_table_schema = wc_get_container()->get( \Automattic\WooCommerce\Internal\Email\Unsubscribes\Storage::class )->get_database_schema();
+		$order_stats_table_schema        = self::get_order_stats_table_schema( $collate );
 
 		$mysql_version = wc_get_server_database_version()['number'];
 		if ( version_compare( $mysql_version, '5.6', '>=' ) ) {
@@ -2095,6 +2112,7 @@ CREATE TABLE {$wpdb->prefix}wc_category_lookup (
 ) $collate;
 $hpos_table_schema;
 $stock_notifications_table_schema;
+$email_unsubscribes_table_schema;
 		";
 
 		return $tables;
@@ -2134,6 +2152,7 @@ $stock_notifications_table_schema;
 			"{$wpdb->prefix}wc_product_attributes_lookup",
 			"{$wpdb->prefix}wc_stock_notifications",
 			"{$wpdb->prefix}wc_stock_notificationmeta",
+			"{$wpdb->prefix}wc_email_unsubscribes",
 
 			// WCA Tables.
 			"{$wpdb->prefix}wc_order_stats",
@@ -3007,7 +3026,7 @@ EOT;
 <div class="wp-block-woocommerce-cart-line-items-block"></div>
 <!-- /wp:woocommerce/cart-line-items-block -->
 
-<!-- wp:woocommerce/product-collection {"queryId":0,"query":{"perPage":3,"pages":1,"offset":0,"postType":"product","order":"asc","orderBy":"title","search":"","exclude":[],"inherit":false,"taxQuery":{},"isProductCollectionBlock":true,"featured":false,"woocommerceOnSale":false,"woocommerceStockStatus":["instock","outofstock","onbackorder"],"woocommerceAttributes":[],"woocommerceHandPickedProducts":[],"filterable":false,"relatedBy":{"categories":true,"tags":true}},"tagName":"div","displayLayout":{"type":"flex","columns":3,"shrinkColumns":true},"dimensions":{"widthType":"fill"},"collection":"woocommerce/product-collection/cross-sells","hideControls":["filterable"],"queryContextIncludes":["collection"],"__privatePreviewState":{"isPreview":true,"previewMessage":"Actual products will vary depending on the page being viewed."}} -->
+<!-- wp:woocommerce/product-collection {"queryId":0,"query":{"perPage":3,"pages":1,"offset":0,"postType":"product","order":"asc","orderBy":"title","search":"","exclude":[],"inherit":false,"taxQuery":{},"isProductCollectionBlock":true,"featured":false,"woocommerceOnSale":false,"woocommerceStockStatus":["instock","outofstock","onbackorder"],"woocommerceAttributes":[],"woocommerceHandPickedProducts":[],"filterable":false,"relatedBy":{"categories":true,"tags":true}},"tagName":"div","displayLayout":{"type":"flex","columns":3,"shrinkColumns":true},"dimensions":{"widthType":"fill"},"collection":"woocommerce/product-collection/cross-sells","hideControls":["filterable"],"queryContextIncludes":["collection"]} -->
 <div class="wp-block-woocommerce-product-collection"><!-- wp:heading {"textAlign":"left","style":{"spacing":{"margin":{"bottom":"1rem"}}}} -->
 <h2 class="wp-block-heading has-text-align-left" style="margin-bottom:1rem">' . __( 'You may be interested in&hellip;', 'woocommerce' ) . '</h2>
 
