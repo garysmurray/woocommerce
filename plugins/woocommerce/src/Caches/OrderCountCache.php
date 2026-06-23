@@ -174,9 +174,10 @@ class OrderCountCache {
 			}
 		}
 
-		$cache_keys = array_map( function( $order_statuses ) use ( $order_type ) {
-			return $this->get_cache_key( $order_type, $order_statuses );
-		}, $order_statuses );
+		$cache_keys = array_map(
+			fn( $order_statuses ) => $this->get_cache_key( $order_type, $order_statuses ),
+			$order_statuses
+		);
 
 		$cache_values  = wp_cache_get_multiple( $cache_keys );
 		$status_values = array();
@@ -235,9 +236,10 @@ class OrderCountCache {
 			$flush_saved_statuses = true;
 		}
 
-		$cache_keys = array_map( function( $order_statuses ) use ( $order_type ) {
-			return $this->get_cache_key( $order_type, $order_statuses );
-		}, $order_statuses );
+		$cache_keys = array_map(
+			fn( $order_statuses ) => $this->get_cache_key( $order_type, $order_statuses ),
+			$order_statuses
+		);
 
 		if ( $flush_saved_statuses ) {
 			// If all statuses are being flushed, go ahead and flush the status list so any permanently removed statuses are cleared out.
