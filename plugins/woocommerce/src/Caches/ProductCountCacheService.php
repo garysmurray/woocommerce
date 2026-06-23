@@ -142,24 +142,28 @@ class ProductCountCacheService {
 	 * @return void
 	 */
 	public function update_on_product_status_changed( string $new_status, string $old_status, WP_Post $post ): void {
-		if (
-			'product' !== $post->post_type ||
-			! $this->product_count_cache->is_cached( 'product', $new_status ) ||
-			! $this->product_count_cache->is_cached( 'product', $old_status )
-		) {
+		if ( 'product' !== $post->post_type ) {
+			return;
+		}
+
+		$is_new_cached = $this->product_count_cache->is_cached( 'product', $new_status );
+		$is_old_cached = $this->product_count_cache->is_cached( 'product', $old_status );
+		if ( ! $is_new_cached && ! $is_old_cached ) {
 			return;
 		}
 
 		$product_id = $post->ID;
 
 		// If the status count has already been incremented for this product, skip.
-		if ( isset( $this->product_statuses[ $product_id ] ) && $this->product_statuses[ $product_id ] === $new_status ) {
+		if ( ( $this->product_statuses[ $product_id ] ?? null ) === $new_status ) {
 			return;
 		}
 
 		$this->product_statuses[ $product_id ] = $new_status;
-		$was_decremented                        = $this->product_count_cache->decrement( 'product', $old_status );
-		$this->product_count_cache->increment( 'product', $new_status );
+		$was_decremented                       = $is_old_cached && $this->product_count_cache->decrement( 'product', $old_status );
+		if ( $is_new_cached ) {
+			$this->product_count_cache->increment( 'product', $new_status );
+		}
 
 		// Set the initial product status in case this is a new product and the previous status should not be decremented.
 		if ( ! isset( $this->initial_product_statuses[ $product_id ] ) && $was_decremented ) {
