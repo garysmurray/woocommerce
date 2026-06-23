@@ -4,8 +4,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\Caches;
 
-use Automattic\WooCommerce\Enums\ProductStatus;
-
 /**
  * A class to cache counts for various product statuses.
  */

@@ -4,10 +4,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\Caches;
 
-use Automattic\WooCommerce\Caching\ObjectCache;
 use Automattic\WooCommerce\Enums\OrderStatus;
-use Automattic\WooCommerce\Internal\DataStores\Orders\OrdersTableDataStore;
-use Automattic\WooCommerce\Utilities\OrderUtil;
 
 /**
  * A class to cache counts for various order statuses.
@@ -96,7 +93,7 @@ class OrderCountCache {
 	}
 
 	/**
-	 * Get the cache key saved statuses of the given order type.
+	 * Get the cache key for saved statuses of the given order type.
 	 *
 	 * @param string $order_type The type of order.
 	 *
@@ -162,8 +159,9 @@ class OrderCountCache {
 	 * Get the cache value for a given order type and set of statuses.
 	 *
 	 * @param string   $order_type     The type of order.
-	 * @param string[] $order_statuses The statuses of the order.
-	 * @return null|array<string, int> The cache value.
+	 * @param string[] $order_statuses The statuses to retrieve.
+	 *
+	 * @return array<string,int>|null The cached counts keyed by status, or null if any status is missing.
 	 */
 	public function get( $order_type, $order_statuses = array() ) {
 		$order_type = (string) $order_type;
@@ -196,12 +194,13 @@ class OrderCountCache {
 	}
 
 	/**
-	 * Increment the cache value for a given order status.
+	 * Increment the cache value for a given order type and status.
 	 *
-	 * @param string $order_type The type of order.
+	 * @param string $order_type   The type of order.
 	 * @param string $order_status The status of the order.
-	 * @param int $offset The amount to increment by.
-	 * @return int The new value of the cache.
+	 * @param int    $offset       The amount to increment by.
+	 *
+	 * @return int|false The new value, or false on failure.
 	 */
 	public function increment( $order_type, $order_status, $offset = 1 ) {
 		$cache_key = $this->get_cache_key( $order_type, $order_status );
@@ -209,12 +208,13 @@ class OrderCountCache {
 	}
 
 	/**
-	 * Decrement the cache value for a given order status.
+	 * Decrement the cache value for a given order type and status.
 	 *
-	 * @param string $order_type The type of order.
+	 * @param string $order_type   The type of order.
 	 * @param string $order_status The status of the order.
-	 * @param int $offset The amount to decrement by.
-	 * @return int The new value of the cache.
+	 * @param int    $offset       The amount to decrement by.
+	 *
+	 * @return int|false The new value, or false on failure.
 	 */
 	public function decrement( $order_type, $order_status, $offset = 1 ) {
 		$cache_key = $this->get_cache_key( $order_type, $order_status );
@@ -224,8 +224,9 @@ class OrderCountCache {
 	/**
 	 * Flush the cache for a given order type and statuses.
 	 *
-	 * @param string $order_type The type of order.
-	 * @param string[] $order_statuses The statuses of the order.
+	 * @param string   $order_type     The type of order.
+	 * @param string[] $order_statuses The statuses to flush. Flushes all known statuses if empty.
+	 *
 	 * @return void
 	 */
 	public function flush( $order_type = 'shop_order', $order_statuses = array() ) {
