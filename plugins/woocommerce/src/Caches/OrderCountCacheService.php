@@ -34,6 +34,7 @@ class OrderCountCacheService {
 
 	/**
 	 * Array of order ids with their initial status as key value pairs.
+	 * Guarantees idempotency for order status transitions when multiple hooks fire for the same order.
 	 *
 	 * @var array
 	 */
