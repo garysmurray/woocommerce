@@ -154,6 +154,54 @@ final class ProductCountCacheServiceTest extends \WC_Unit_Test_Case {
 	}
 
 	/**
+	 * Test that the source status count decrements correctly even when only the source slot is cached.
+	 */
+	public function test_count_decremented_when_only_source_status_is_cached(): void {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_status( ProductStatus::DRAFT );
+		$product->save();
+
+		// Warm all status slots, then flush only the target to create a partially cold cache.
+		ProductUtil::get_count_for_type( 'product' );
+		$draft_before = $this->product_cache->get( 'product', array( ProductStatus::DRAFT ) )[ ProductStatus::DRAFT ];
+
+		$this->product_cache->flush( 'product', array( ProductStatus::PUBLISH ) );
+
+		$product->set_status( ProductStatus::PUBLISH );
+		$product->save();
+
+		// The draft slot should be decremented even though the publish slot was cold.
+		$draft_after = $this->product_cache->get( 'product', array( ProductStatus::DRAFT ) )[ ProductStatus::DRAFT ];
+		$this->assertSame( $draft_before - 1, $draft_after );
+	}
+
+	/**
+	 * Test that the final status is not double-incremented when a plugin permanently changes
+	 * product status inside save_post_product before woocommerce_new_product fires.
+	 */
+	public function test_count_not_double_incremented_on_new_product_with_mid_creation_status_change(): void {
+		// Warm all status slots and record the publish count before the test.
+		ProductUtil::get_count_for_type( 'product' );
+		$publish_before = $this->product_cache->get( 'product', array( ProductStatus::PUBLISH ) )[ ProductStatus::PUBLISH ];
+
+		$hook = null;
+		$hook = static function( int $post_id ) use ( &$hook ): void {
+			remove_action( 'save_post_product', $hook, 1 );
+			wp_update_post( array( 'ID' => $post_id, 'post_status' => ProductStatus::PUBLISH ) );
+		};
+		add_action( 'save_post_product', $hook, 1 );
+
+		$product = new WC_Product_Simple();
+		$product->set_status( ProductStatus::DRAFT );
+		$product->save();
+
+		// Publish should be exactly +1: the product ended in PUBLISH and the idempotency guard
+		// in update_on_new_product prevented a second increment.
+		$publish_after = $this->product_cache->get( 'product', array( ProductStatus::PUBLISH ) )[ ProductStatus::PUBLISH ];
+		$this->assertSame( $publish_before + 1, $publish_after );
+	}
+
+	/**
 	 * Test that background actions are scheduled.
 	 */
 	public function test_background_actions_scheduled(): void {
