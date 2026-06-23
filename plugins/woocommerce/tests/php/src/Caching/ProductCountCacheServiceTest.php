@@ -130,6 +130,30 @@ final class ProductCountCacheServiceTest extends \WC_Unit_Test_Case {
 	}
 
 	/**
+	 * Test that counts are correct when a product cycles through statuses during creation.
+	 */
+	public function test_count_not_corrupted_on_status_cycle_during_creation(): void {
+		$initial_count = ProductUtil::get_count_for_type( 'product' );
+
+		$hook = null;
+		$hook = static function( int $post_id ) use ( &$hook ): void {
+			remove_action( 'save_post_product', $hook, 1 );
+			wp_update_post( array( 'ID' => $post_id, 'post_status' => ProductStatus::PUBLISH ) );
+			wp_update_post( array( 'ID' => $post_id, 'post_status' => ProductStatus::DRAFT ) );
+		};
+		add_action( 'save_post_product', $hook, 1 );
+
+		$product = new WC_Product_Simple();
+		$product->set_status( ProductStatus::DRAFT );
+		$product->save();
+
+		$count = ProductUtil::get_count_for_type( 'product' );
+
+		$this->assertSame( $initial_count[ ProductStatus::DRAFT ] + 1, $count[ ProductStatus::DRAFT ] );
+		$this->assertSame( $initial_count[ ProductStatus::PUBLISH ], $count[ ProductStatus::PUBLISH ] );
+	}
+
+	/**
 	 * Test that background actions are scheduled.
 	 */
 	public function test_background_actions_scheduled(): void {
