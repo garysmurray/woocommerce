@@ -217,7 +217,7 @@ class OrderCountCacheService {
 		}
 
 		$this->order_statuses[ $order_id ] = $next_status;
-		$was_decremented                   = $this->order_count_cache->decrement( $order_type, $this->get_prefixed_status( $previous_status ) );
+		$was_decremented                   = false !== $this->order_count_cache->decrement( $order_type, $this->get_prefixed_status( $previous_status ) );
 		$this->order_count_cache->increment( $order_type, $this->get_prefixed_status( $next_status ) );
 
 		// Set the initial order status in case this is a new order and the previous status should not be decremented.

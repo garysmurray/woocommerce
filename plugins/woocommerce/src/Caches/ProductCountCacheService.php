@@ -162,7 +162,7 @@ class ProductCountCacheService {
 		}
 
 		$this->product_statuses[ $product_id ] = $new_status;
-		$was_decremented                       = $is_old_cached && $this->product_count_cache->decrement( 'product', $old_status );
+		$was_decremented                       = $is_old_cached && false !== $this->product_count_cache->decrement( 'product', $old_status );
 		if ( $is_new_cached ) {
 			$this->product_count_cache->increment( 'product', $new_status );
 		}
