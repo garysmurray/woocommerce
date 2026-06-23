@@ -119,7 +119,7 @@ class ProductCountCache {
 	 *
 	 * @return array<string,bool>
 	 */
-	public function set_multiple( string $product_type, array $counts ): array {
+	public function set_multiple( string $product_type, array $counts ) {
 		if ( empty( $counts ) ) {
 			return array();
 		}
@@ -142,7 +142,7 @@ class ProductCountCache {
 	 *
 	 * @return array<string,int>|null
 	 */
-	public function get( string $product_type, array $product_statuses = array() ): ?array {
+	public function get( string $product_type, array $product_statuses = array() ) {
 		if ( empty( $product_statuses ) ) {
 			$product_statuses = $this->get_saved_statuses_for_type( $product_type );
 			if ( empty( $product_statuses ) ) {
