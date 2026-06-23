@@ -4,6 +4,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\Caches;
 
+use Automattic\WooCommerce\Utilities\ProductUtil;
 use WC_Product;
 use WP_Post;
 
@@ -80,7 +81,7 @@ class ProductCountCacheService {
 		// Cache warm-up is only effective when an object cache plugin is active, and the cache entry is missing.
 		if ( wp_using_ext_object_cache() && null === $this->product_count_cache->get( $product_type ) ) {
 			$this->product_count_cache->flush( $product_type );
-			// TBD: \Automattic\WooCommerce\Utilities\ProductUtil::get_count_for_type( $product_type );
+			ProductUtil::get_count_for_type( $product_type );
 		}
 	}
 
