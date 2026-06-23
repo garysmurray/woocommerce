@@ -68,7 +68,7 @@ class ProductCountCache {
 	 * @param string $product_type   The type of product.
 	 * @param string $product_status The status of the product.
 	 *
-	 * @return string The cache key.
+	 * @return string
 	 */
 	private function get_cache_key( string $product_type, string $product_status ): string {
 		return $this->cache_prefix . '_' . $product_type . '_' . $product_status;
@@ -79,7 +79,7 @@ class ProductCountCache {
 	 *
 	 * @param string $product_type The type of product.
 	 *
-	 * @return string The cache key.
+	 * @return string
 	 */
 	private function get_saved_statuses_cache_key( string $product_type ): string {
 		return $this->cache_prefix . '_' . $product_type . '_statuses';
@@ -91,7 +91,7 @@ class ProductCountCache {
 	 * @param string $product_type   The type of product.
 	 * @param string $product_status The status of the product.
 	 *
-	 * @return bool True if the cache has a value, false otherwise.
+	 * @return bool
 	 */
 	public function is_cached( string $product_type, string $product_status ): bool {
 		return false !== wp_cache_get( $this->get_cache_key( $product_type, $product_status ) );
@@ -104,7 +104,7 @@ class ProductCountCache {
 	 * @param string $product_status The status slug of the product.
 	 * @param int    $value          The value to set.
 	 *
-	 * @return bool True if the value was set, false otherwise.
+	 * @return bool
 	 */
 	public function set( string $product_type, string $product_status, int $value ): bool {
 		$this->ensure_statuses_for_type( $product_type, array( $product_status ) );
@@ -114,10 +114,10 @@ class ProductCountCache {
 	/**
 	 * Set the cache count value for multiple statuses at once.
 	 *
-	 * @param string        $product_type The product type being set.
-	 * @param array<string> $counts       Counts keyed by status slug (e.g. [ 'publish' => 10, 'draft' => 5 ]).
+	 * @param string            $product_type The product type being set.
+	 * @param array<string,int> $counts       Counts keyed by status slug (e.g. [ 'publish' => 10, 'draft' => 5 ]).
 	 *
-	 * @return array|bool[] Success map from wp_cache_set_multiple().
+	 * @return array<string,bool>
 	 */
 	public function set_multiple( string $product_type, array $counts ): array {
 		if ( empty( $counts ) ) {
@@ -140,7 +140,7 @@ class ProductCountCache {
 	 * @param string   $product_type     The type of product.
 	 * @param string[] $product_statuses The statuses to retrieve.
 	 *
-	 * @return array<string,int>|null The cached counts keyed by status, or null if any status is missing.
+	 * @return array<string,int>|null
 	 */
 	public function get( string $product_type, array $product_statuses = array() ): ?array {
 		if ( empty( $product_statuses ) ) {
@@ -177,7 +177,7 @@ class ProductCountCache {
 	 * @param string $product_status The status of the product.
 	 * @param int    $offset         The amount to increment by.
 	 *
-	 * @return int|false The new value, or false on failure.
+	 * @return int|false
 	 */
 	public function increment( string $product_type, string $product_status, int $offset = 1 ) {
 		return wp_cache_incr( $this->get_cache_key( $product_type, $product_status ), $offset );
@@ -190,7 +190,7 @@ class ProductCountCache {
 	 * @param string $product_status The status of the product.
 	 * @param int    $offset         The amount to decrement by.
 	 *
-	 * @return int|false The new value, or false on failure.
+	 * @return int|false
 	 */
 	public function decrement( string $product_type, string $product_status, int $offset = 1 ) {
 		return wp_cache_decr( $this->get_cache_key( $product_type, $product_status ), $offset );

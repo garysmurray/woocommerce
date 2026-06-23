@@ -66,6 +66,7 @@ class OrderCountCacheService {
 	 * @deprecated 10.7.0 Was used for handling `woocommerce_refresh_order_count_cache` actions.
 	 *
 	 * @param string $order_type The order type.
+	 *
 	 * @return void
 	 */
 	public function refresh_cache( $order_type ) {
@@ -81,6 +82,7 @@ class OrderCountCacheService {
 	 * @since 10.7.0
 	 *
 	 * @param string $order_type The order type.
+	 *
 	 * @return void
 	 */
 	public function prime_cache_if_cold( $order_type ) {
@@ -110,6 +112,8 @@ class OrderCountCacheService {
 	 *
 	 * @since 10.0.0
 	 * @internal
+	 *
+	 * @return void
 	 */
 	public function unschedule_background_actions() {
 		as_unschedule_all_actions( self::BACKGROUND_EVENT_HOOK );
@@ -119,7 +123,9 @@ class OrderCountCacheService {
 	 * Update the cache when a new order is made.
 	 *
 	 * @param int      $order_id Order id.
-	 * @param WC_Order $order The order.
+	 * @param WC_Order $order    The order.
+	 *
+	 * @return void
 	 */
 	public function update_on_new_order( $order_id, $order ) {
 		$order_type   = $order->get_type();
@@ -148,7 +154,9 @@ class OrderCountCacheService {
 	 * Update the cache when an order is trashed.
 	 *
 	 * @param int      $order_id Order id.
-	 * @param WC_Order $order The order.
+	 * @param WC_Order $order    The order.
+	 *
+	 * @return void
 	 */
 	public function update_on_order_trashed( $order_id, $order ) {
 		$order_type   = $order->get_type();
@@ -165,10 +173,12 @@ class OrderCountCacheService {
 	}
 
 	/**
-	 * Update the cache when an order is deleted.
+	 * Update the cache when an order is permanently deleted.
 	 *
 	 * @param int      $order_id Order id.
-	 * @param WC_Order $order The order.
+	 * @param WC_Order $order    The order.
+	 *
+	 * @return void
 	 */
 	public function update_on_order_deleted( $order_id, $order ) {
 		$order_type   = $order->get_type();
@@ -182,12 +192,14 @@ class OrderCountCacheService {
 	}
 
 	/**
-	 * Update the cache whenver an order status changes.
+	 * Update the cache whenever an order status changes.
 	 *
-	 * @param int      $order_id Order id.
-	 * @param string   $previous_status the old WooCommerce order status.
-	 * @param string   $next_status the new WooCommerce order status.
-	 * @param WC_Order $order The order.
+	 * @param int      $order_id        Order id.
+	 * @param string   $previous_status The old WooCommerce order status.
+	 * @param string   $next_status     The new WooCommerce order status.
+	 * @param WC_Order $order           The order.
+	 *
+	 * @return void
 	 */
 	public function update_on_order_status_changed( $order_id, $previous_status, $next_status, $order ) {
 		$order_type = $order->get_type();

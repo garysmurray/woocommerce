@@ -86,6 +86,7 @@ class OrderCountCache {
 	 *
 	 * @param string $order_type The type of order.
 	 * @param string $order_status The status of the order.
+	 *
 	 * @return string The cache key.
 	 */
 	private function get_cache_key( $order_type, $order_status ) {
@@ -108,6 +109,7 @@ class OrderCountCache {
 	 *
 	 * @param string $order_type The type of order.
 	 * @param string $order_status The status of the order.
+	 *
 	 * @return bool True if the cache has a value, false otherwise.
 	 */
 	public function is_cached( $order_type, $order_status ) {
@@ -121,6 +123,7 @@ class OrderCountCache {
 	 * @param string $order_type The type of order.
 	 * @param string $order_status The status slug of the order.
 	 * @param int $value The value to set.
+	 *
 	 * @return bool True if the value was set, false otherwise.
 	 */
 	public function set( $order_type, $order_status, int $value ): bool {
@@ -133,11 +136,10 @@ class OrderCountCache {
 	/**
 	 * Set the cache count value for multiple statuses at once.
 	 *
-	 * @param string $order_type The order type being set.
-	 * @param array  $counts     Normalized counts keyed by status slug
-	 *                           (e.g. [ 'wc-processing' => 10, 'wc-pending' => 5 ]).
+	 * @param string             $order_type The order type being set.
+	 * @param array<string,int>  $counts     Normalized counts keyed by status slug (e.g. [ 'wc-processing' => 10, 'wc-pending' => 5 ]).
 	 *
-	 * @return array|bool[]      Success map from wp_cache_set_multiple().
+	 * @return array<string,bool>
 	 */
 	public function set_multiple( string $order_type, array $counts ) {
 		if ( empty( $counts ) ) {
