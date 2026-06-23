@@ -185,9 +185,21 @@ class ProductCountCacheService {
 	 * @return void
 	 */
 	public function update_on_product_deleted( int $post_id, WP_Post $post ): void {
+		if ( 'product' !== $post->post_type ) {
+			return;
+		}
+
+		// Reverse any errant decrement from a mid-creation status transition that update_on_new_product will never get to correct.
+		if ( isset( $this->initial_product_statuses[ $post_id ] ) ) {
+			$this->product_count_cache->increment( 'product', $this->initial_product_statuses[ $post_id ] );
+			unset( $this->initial_product_statuses[ $post_id ] );
+		}
+
 		$product_status = $post->post_status;
-		if ( 'product' === $post->post_type && $this->product_count_cache->is_cached( 'product', $product_status ) ) {
+		if ( $this->product_count_cache->is_cached( 'product', $product_status ) ) {
 			$this->product_count_cache->decrement( 'product', $product_status );
 		}
+
+		unset( $this->product_statuses[ $post_id ] );
 	}
 }
