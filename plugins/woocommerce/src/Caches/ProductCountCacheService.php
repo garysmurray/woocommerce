@@ -14,7 +14,7 @@ use WP_Post;
  */
 class ProductCountCacheService {
 
-	const BACKGROUND_EVENT_HOOK = 'woocommerce_refresh_product_count_cache';
+	public const BACKGROUND_EVENT_HOOK = 'woocommerce_refresh_product_count_cache';
 
 	/**
 	 * ProductCountCache instance.

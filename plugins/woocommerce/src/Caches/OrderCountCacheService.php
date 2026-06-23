@@ -15,7 +15,7 @@ use Automattic\WooCommerce\Utilities\OrderUtil;
  */
 class OrderCountCacheService {
 
-	const BACKGROUND_EVENT_HOOK = 'woocommerce_refresh_order_count_cache';
+	public const BACKGROUND_EVENT_HOOK = 'woocommerce_refresh_order_count_cache';
 
 	/**
 	 * OrderCountCache instance.
