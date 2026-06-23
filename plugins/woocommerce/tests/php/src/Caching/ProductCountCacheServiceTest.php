@@ -233,6 +233,41 @@ final class ProductCountCacheServiceTest extends \WC_Unit_Test_Case {
 	}
 
 	/**
+	 * Test that the source status count is not corrupted when a plugin permanently changes
+	 * product status inside save_post_product before woocommerce_new_product fires.
+	 */
+	public function test_source_count_not_corrupted_on_new_product_with_mid_creation_status_change(): void {
+		// Warm all status slots and record both counts before the test.
+		ProductUtil::get_count_for_type( 'product' );
+		$draft_before   = $this->product_cache->get( 'product', array( ProductStatus::DRAFT ) )[ ProductStatus::DRAFT ];
+		$publish_before = $this->product_cache->get( 'product', array( ProductStatus::PUBLISH ) )[ ProductStatus::PUBLISH ];
+
+		$hook = null;
+		$hook = static function ( int $post_id ) use ( &$hook ): void {
+			remove_action( 'save_post_product', $hook, 1 );
+			wp_update_post(
+				array(
+					'ID'          => $post_id,
+					'post_status' => ProductStatus::PUBLISH,
+				)
+			);
+		};
+		add_action( 'save_post_product', $hook, 1 );
+
+		$product = new WC_Product_Simple();
+		$product->set_status( ProductStatus::DRAFT );
+		$product->save();
+
+		// The product ended in PUBLISH, so draft must be unchanged and publish must be exactly +1.
+		$draft_after   = $this->product_cache->get( 'product', array( ProductStatus::DRAFT ) )[ ProductStatus::DRAFT ];
+		$publish_after = $this->product_cache->get( 'product', array( ProductStatus::PUBLISH ) )[ ProductStatus::PUBLISH ];
+		$this->assertSame( $draft_before, $draft_after );
+		$this->assertSame( $publish_before + 1, $publish_after );
+
+		$product->delete( true );
+	}
+
+	/**
 	 * Test that background actions are scheduled.
 	 */
 	public function test_background_actions_scheduled(): void {
