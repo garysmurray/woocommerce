@@ -28,7 +28,7 @@ class OrderCountCacheService {
 	 * Array of order ids with their last transitioned status as key value pairs.
 	 * Guarantees idempotency for order status transitions when multiple hooks fire for the same order.
 	 *
-	 * @var array
+	 * @var array<int,string>
 	 */
 	private $order_statuses = array();
 
@@ -36,7 +36,7 @@ class OrderCountCacheService {
 	 * Array of order ids with their initial status as key value pairs.
 	 * Guarantees idempotency for order status transitions when multiple hooks fire for the same order.
 	 *
-	 * @var array
+	 * @var array<int,string>
 	 */
 	private $initial_order_statuses = array();
 

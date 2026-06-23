@@ -27,7 +27,7 @@ class ProductCountCacheService {
 	 * Array of product IDs with their last transitioned status as key value pairs.
 	 * Guarantees idempotency for product status transitions when multiple hooks fire for the same product.
 	 *
-	 * @var array<int, string>
+	 * @var array<int,string>
 	 */
 	private array $product_statuses = array();
 
@@ -35,7 +35,7 @@ class ProductCountCacheService {
 	 * Array of product IDs with their initial status as key value pairs.
 	 * Guarantees idempotency for product status transitions when multiple hooks fire for the same product.
 	 *
-	 * @var array<int, string>
+	 * @var array<int,string>
 	 */
 	private array $initial_product_statuses = array();
 
