@@ -37,11 +37,8 @@ class ProductCountCache {
 	 */
 	private function get_saved_statuses_for_type( string $product_type ): array {
 		$statuses = wp_cache_get( $this->get_saved_statuses_cache_key( $product_type ) );
-		if ( ! is_array( $statuses ) ) {
-			$statuses = array();
-		}
 
-		return $statuses;
+		return is_array( $statuses ) ? $statuses : array();
 	}
 
 	/**
@@ -62,20 +59,9 @@ class ProductCountCache {
 		if ( empty( $new_statuses ) ) {
 			return;
 		}
+
 		$merged = array_unique( array_merge( $existing, $new_statuses ) );
-
 		wp_cache_set( $this->get_saved_statuses_cache_key( $product_type ), $merged, '', $this->expiration );
-	}
-
-	/**
-	 * Get the default statuses.
-	 *
-	 * @since 11.0.0
-	 *
-	 * @return string[]
-	 */
-	public function get_default_statuses(): array {
-		return ProductStatus::get_all();
 	}
 
 	/**
@@ -130,8 +116,8 @@ class ProductCountCache {
 	/**
 	 * Set the cache count value for multiple statuses at once.
 	 *
-	 * @param string $product_type The product type being set.
-	 * @param array  $counts       Counts keyed by status slug (e.g. [ 'publish' => 10, 'draft' => 5 ]).
+	 * @param string        $product_type The product type being set.
+	 * @param array<string> $counts       Counts keyed by status slug (e.g. [ 'publish' => 10, 'draft' => 5 ]).
 	 *
 	 * @return array|bool[] Success map from wp_cache_set_multiple().
 	 */
@@ -156,7 +142,7 @@ class ProductCountCache {
 	 * @param string   $product_type     The type of product.
 	 * @param string[] $product_statuses The statuses to retrieve.
 	 *
-	 * @return array<string, int>|null The cached counts keyed by status, or null if any status is missing.
+	 * @return array<string,int>|null The cached counts keyed by status, or null if any status is missing.
 	 */
 	public function get( string $product_type, array $product_statuses = array() ): ?array {
 		if ( empty( $product_statuses ) ) {
