@@ -27,6 +27,13 @@ final class ProductUtil {
 
 		if ( null === $count_per_status ) {
 			$count_per_status = (array) wp_count_posts( $product_type );
+
+			// Make sure all post statuses are included just in case.
+			$count_per_status = array_merge(
+				array_fill_keys( array_keys( get_post_stati() ), 0 ),
+				$count_per_status
+			);
+
 			$product_count_cache->set_multiple( $product_type, $count_per_status );
 		}
 
