@@ -118,9 +118,8 @@ class ProductCountCacheService {
 			return;
 		}
 
-		// If the status was already transitioned via transition_post_status, restore any errantly
-		// decremented initial status (the old_status='new' guard would have prevented decrement,
-		// but if a real prior status was decremented, undo it here).
+		// If the product status was updated, we need to increment the product count cache for the
+		// initial status that was errantly decremented on product status change.
 		if ( isset( $this->initial_product_statuses[ $product_id ] ) ) {
 			$this->product_count_cache->increment( 'product', $this->initial_product_statuses[ $product_id ] );
 		}
@@ -136,10 +135,6 @@ class ProductCountCacheService {
 
 	/**
 	 * Update the cache whenever a product status changes.
-	 *
-	 * Fires on the WordPress transition_post_status hook. For brand-new posts, WordPress passes
-	 * old_status='new', which is never cached, causing an early return; the increment is then
-	 * handled by update_on_new_product.
 	 *
 	 * @param string  $new_status The new post status.
 	 * @param string  $old_status The previous post status.
