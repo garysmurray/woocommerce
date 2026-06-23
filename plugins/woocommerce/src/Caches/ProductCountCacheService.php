@@ -118,6 +118,7 @@ class ProductCountCacheService {
 		// initial status that was errantly decremented on product status change.
 		if ( isset( $this->initial_product_statuses[ $product_id ] ) ) {
 			$this->product_count_cache->increment( 'product', $this->initial_product_statuses[ $product_id ] );
+			unset( $this->initial_product_statuses[ $product_id ] );
 		}
 
 		if ( ! $this->product_count_cache->is_cached( 'product', $product_status ) ) {
@@ -168,6 +169,8 @@ class ProductCountCacheService {
 		// Set the initial product status in case this is a new product and the previous status should not be decremented.
 		if ( ! isset( $this->initial_product_statuses[ $product_id ] ) && $was_decremented ) {
 			$this->initial_product_statuses[ $product_id ] = $old_status;
+		} elseif ( ( $this->initial_product_statuses[ $product_id ] ?? null ) === $new_status ) {
+			unset( $this->initial_product_statuses[ $product_id ] );
 		}
 	}
 
