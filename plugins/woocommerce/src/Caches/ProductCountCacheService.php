@@ -101,7 +101,7 @@ class ProductCountCacheService {
 	 * @return void
 	 */
 	public function unschedule_background_actions(): void {
-		WC()->queue()->cancel_all( self::BACKGROUND_EVENT_HOOK );
+		as_unschedule_all_actions( self::BACKGROUND_EVENT_HOOK );
 	}
 
 	/**
