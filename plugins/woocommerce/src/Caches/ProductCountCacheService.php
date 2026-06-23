@@ -114,18 +114,18 @@ class ProductCountCacheService {
 	public function update_on_new_product( int $product_id, WC_Product $product ): void {
 		$product_status = $product->get_status();
 
-		if ( ! $this->product_count_cache->is_cached( 'product', $product_status ) ) {
-			return;
-		}
-
 		// If the product status was updated, we need to increment the product count cache for the
 		// initial status that was errantly decremented on product status change.
 		if ( isset( $this->initial_product_statuses[ $product_id ] ) ) {
 			$this->product_count_cache->increment( 'product', $this->initial_product_statuses[ $product_id ] );
 		}
 
+		if ( ! $this->product_count_cache->is_cached( 'product', $product_status ) ) {
+			return;
+		}
+
 		// If this status was already incremented via transition_post_status, skip.
-		if ( isset( $this->product_statuses[ $product_id ] ) && $this->product_statuses[ $product_id ] === $product_status ) {
+		if ( ( $this->product_statuses[ $product_id ] ?? null ) === $product_status ) {
 			return;
 		}
 
