@@ -44,6 +44,8 @@ final class ProductCountCacheServiceTest extends \WC_Unit_Test_Case {
 		$counts = ProductUtil::get_count_for_type( 'product' );
 
 		$this->assertSame( $initial_count + 1, $counts[ ProductStatus::PUBLISH ] );
+
+		$product->delete( true );
 	}
 
 	/**
@@ -79,6 +81,8 @@ final class ProductCountCacheServiceTest extends \WC_Unit_Test_Case {
 
 		$this->assertSame( $initial_count[ ProductStatus::PUBLISH ] - 1, $count[ ProductStatus::PUBLISH ] );
 		$this->assertSame( $initial_count[ ProductStatus::DRAFT ] + 1, $count[ ProductStatus::DRAFT ] );
+
+		$product->delete( true );
 	}
 
 	/**
@@ -87,12 +91,14 @@ final class ProductCountCacheServiceTest extends \WC_Unit_Test_Case {
 	public function test_count_on_new_product_with_initial_status(): void {
 		$initial_count = ProductUtil::get_count_for_type( 'product' );
 
-		WC_Helper_Product::create_simple_product( true, array( 'status' => ProductStatus::PENDING ) );
+		$product = WC_Helper_Product::create_simple_product( true, array( 'status' => ProductStatus::PENDING ) );
 
 		$count = ProductUtil::get_count_for_type( 'product' );
 
 		$this->assertSame( $initial_count[ ProductStatus::PUBLISH ], $count[ ProductStatus::PUBLISH ] );
 		$this->assertSame( $initial_count[ ProductStatus::PENDING ] + 1, $count[ ProductStatus::PENDING ] );
+
+		$product->delete( true );
 	}
 
 	/**
@@ -109,6 +115,8 @@ final class ProductCountCacheServiceTest extends \WC_Unit_Test_Case {
 
 		$this->assertSame( $initial_count[ ProductStatus::DRAFT ] + 1, $count[ ProductStatus::DRAFT ] );
 		$this->assertSame( $initial_count[ ProductStatus::PUBLISH ], $count[ ProductStatus::PUBLISH ] );
+
+		$product->delete( true );
 	}
 
 	/**
@@ -127,6 +135,8 @@ final class ProductCountCacheServiceTest extends \WC_Unit_Test_Case {
 		$this->assertSame( $initial_count[ ProductStatus::PUBLISH ], $count[ ProductStatus::PUBLISH ] );
 		$this->assertSame( $initial_count[ ProductStatus::DRAFT ], $count[ ProductStatus::DRAFT ] );
 		$this->assertSame( $initial_count[ ProductStatus::PENDING ] + 1, $count[ ProductStatus::PENDING ] );
+
+		$product->delete( true );
 	}
 
 	/**
@@ -151,6 +161,8 @@ final class ProductCountCacheServiceTest extends \WC_Unit_Test_Case {
 
 		$this->assertSame( $initial_count[ ProductStatus::DRAFT ] + 1, $count[ ProductStatus::DRAFT ] );
 		$this->assertSame( $initial_count[ ProductStatus::PUBLISH ], $count[ ProductStatus::PUBLISH ] );
+
+		$product->delete( true );
 	}
 
 	/**
@@ -173,6 +185,8 @@ final class ProductCountCacheServiceTest extends \WC_Unit_Test_Case {
 		// The draft slot should be decremented even though the publish slot was cold.
 		$draft_after = $this->product_cache->get( 'product', array( ProductStatus::DRAFT ) )[ ProductStatus::DRAFT ];
 		$this->assertSame( $draft_before - 1, $draft_after );
+
+		$product->delete( true );
 	}
 
 	/**
@@ -199,6 +213,8 @@ final class ProductCountCacheServiceTest extends \WC_Unit_Test_Case {
 		// in update_on_new_product prevented a second increment.
 		$publish_after = $this->product_cache->get( 'product', array( ProductStatus::PUBLISH ) )[ ProductStatus::PUBLISH ];
 		$this->assertSame( $publish_before + 1, $publish_after );
+
+		$product->delete( true );
 	}
 
 	/**
