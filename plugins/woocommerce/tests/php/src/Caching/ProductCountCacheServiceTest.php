@@ -200,8 +200,7 @@ final class ProductCountCacheServiceTest extends \WC_Unit_Test_Case {
 	}
 
 	/**
-	 * Test that the final status is not double-incremented when a plugin permanently changes
-	 * product status inside save_post_product before woocommerce_new_product fires.
+	 * Test that the final status is not double-incremented when a plugin permanently changes product status during creation.
 	 */
 	public function test_count_not_double_incremented_on_new_product_with_mid_creation_status_change(): void {
 		// Warm all status slots and record the publish count before the test.
@@ -224,8 +223,7 @@ final class ProductCountCacheServiceTest extends \WC_Unit_Test_Case {
 		$product->set_status( ProductStatus::DRAFT );
 		$product->save();
 
-		// Publish should be exactly +1: the product ended in PUBLISH and the idempotency guard
-		// in update_on_new_product prevented a second increment.
+		// Publish should be exactly +1: the product ended in PUBLISH, draft must be unchanged.
 		$publish_after = $this->product_cache->get( 'product', array( ProductStatus::PUBLISH ) )[ ProductStatus::PUBLISH ];
 		$this->assertSame( $publish_before + 1, $publish_after );
 
@@ -233,8 +231,7 @@ final class ProductCountCacheServiceTest extends \WC_Unit_Test_Case {
 	}
 
 	/**
-	 * Test that the source status count is not corrupted when a plugin permanently changes
-	 * product status inside save_post_product before woocommerce_new_product fires.
+	 * Test that the source status is not over-counted when a plugin permanently changes product status during creation.
 	 */
 	public function test_source_count_not_corrupted_on_new_product_with_mid_creation_status_change(): void {
 		// Warm all status slots and record both counts before the test.
