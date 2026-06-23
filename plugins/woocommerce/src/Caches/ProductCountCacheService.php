@@ -42,6 +42,8 @@ class ProductCountCacheService {
 
 	/**
 	 * Class initialization, invoked by the DI container.
+	 *
+	 * @internal
 	 */
 	final public function init(): void {
 		$this->product_count_cache = new ProductCountCache();

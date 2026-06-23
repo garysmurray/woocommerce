@@ -146,10 +146,20 @@ final class ProductCountCacheServiceTest extends \WC_Unit_Test_Case {
 		$initial_count = ProductUtil::get_count_for_type( 'product' );
 
 		$hook = null;
-		$hook = static function( int $post_id ) use ( &$hook ): void {
+		$hook = static function ( int $post_id ) use ( &$hook ): void {
 			remove_action( 'save_post_product', $hook, 1 );
-			wp_update_post( array( 'ID' => $post_id, 'post_status' => ProductStatus::PUBLISH ) );
-			wp_update_post( array( 'ID' => $post_id, 'post_status' => ProductStatus::DRAFT ) );
+			wp_update_post(
+				array(
+					'ID'          => $post_id,
+					'post_status' => ProductStatus::PUBLISH,
+				)
+			);
+			wp_update_post(
+				array(
+					'ID'          => $post_id,
+					'post_status' => ProductStatus::DRAFT,
+				)
+			);
 		};
 		add_action( 'save_post_product', $hook, 1 );
 
@@ -199,9 +209,14 @@ final class ProductCountCacheServiceTest extends \WC_Unit_Test_Case {
 		$publish_before = $this->product_cache->get( 'product', array( ProductStatus::PUBLISH ) )[ ProductStatus::PUBLISH ];
 
 		$hook = null;
-		$hook = static function( int $post_id ) use ( &$hook ): void {
+		$hook = static function ( int $post_id ) use ( &$hook ): void {
 			remove_action( 'save_post_product', $hook, 1 );
-			wp_update_post( array( 'ID' => $post_id, 'post_status' => ProductStatus::PUBLISH ) );
+			wp_update_post(
+				array(
+					'ID'          => $post_id,
+					'post_status' => ProductStatus::PUBLISH,
+				)
+			);
 		};
 		add_action( 'save_post_product', $hook, 1 );
 

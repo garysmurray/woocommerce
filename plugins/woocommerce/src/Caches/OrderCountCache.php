@@ -136,8 +136,8 @@ class OrderCountCache {
 	/**
 	 * Set the cache count value for multiple statuses at once.
 	 *
-	 * @param string             $order_type The order type being set.
-	 * @param array<string,int>  $counts     Normalized counts keyed by status slug (e.g. [ 'wc-processing' => 10, 'wc-pending' => 5 ]).
+	 * @param string            $order_type The order type being set.
+	 * @param array<string,int> $counts     Normalized counts keyed by status slug (e.g. [ 'wc-processing' => 10, 'wc-pending' => 5 ]).
 	 *
 	 * @return array<string,bool>
 	 */
