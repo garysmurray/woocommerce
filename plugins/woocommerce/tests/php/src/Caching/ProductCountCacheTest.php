@@ -33,9 +33,9 @@ final class ProductCountCacheTest extends \WC_Unit_Test_Case {
 	public function test_cache_product_counts(): void {
 		$unregistered_status = 'third-party-unregistered-status';
 		$counts              = array(
-			ProductStatus::PUBLISH  => 5,
-			ProductStatus::DRAFT    => 10,
-			$unregistered_status    => 20,
+			ProductStatus::PUBLISH => 5,
+			ProductStatus::DRAFT   => 10,
+			$unregistered_status   => 20,
 		);
 
 		foreach ( $counts as $status => $count ) {
