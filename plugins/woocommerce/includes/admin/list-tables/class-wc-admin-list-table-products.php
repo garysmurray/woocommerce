@@ -8,6 +8,7 @@
 
 use Automattic\WooCommerce\Enums\ProductType;
 use Automattic\WooCommerce\Internal\CostOfGoodsSold\CostOfGoodsSoldController;
+use Automattic\WooCommerce\Utilities\ProductUtil;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -59,10 +60,22 @@ class WC_Admin_List_Table_Products extends WC_Admin_List_Table {
 		add_filter( 'posts_clauses', array( $this, 'posts_clauses' ), 10, 2 );
 		add_filter( 'the_posts', array( $this, 'prime_thumbnail_caches' ), 10, 2 );
 		add_action( 'manage_product_posts_custom_column', array( $this, 'add_sample_product_badge' ), 9, 2 );
+		add_action( 'load-edit.php', array( $this, 'prime_status_counts_cache' ) );
 
 		$cogs_controller              = wc_get_container()->get( CostOfGoodsSoldController::class );
 		$this->cogs_is_enabled        = $cogs_controller->feature_is_enabled();
 		$this->use_cogs_lookup_column = $this->cogs_is_enabled && $cogs_controller->product_meta_lookup_table_cogs_value_columns_exist();
+	}
+
+	/**
+	 * Pre-warm the product status counts cache before the list table renders.
+	 *
+	 * @since 11.0.0
+	 * @return void
+	 */
+	public function prime_status_counts_cache() {
+		// Perfromance note
+		wp_cache_set( 'posts-product', (object) ProductUtil::get_count_for_type( 'product' ), 'counts' );
 	}
 
 	/**
