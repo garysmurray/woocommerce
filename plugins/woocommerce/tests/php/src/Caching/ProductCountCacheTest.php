@@ -9,7 +9,7 @@ use Automattic\WooCommerce\Enums\ProductStatus;
 /**
  * Class ProductCountCacheTest.
  */
-class ProductCountCacheTest extends \WC_Unit_Test_Case {
+final class ProductCountCacheTest extends \WC_Unit_Test_Case {
 
 	/**
 	 * ProductCountCache instance.
