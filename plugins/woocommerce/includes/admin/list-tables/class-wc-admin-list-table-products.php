@@ -74,7 +74,8 @@ class WC_Admin_List_Table_Products extends WC_Admin_List_Table {
 	 * @return void
 	 */
 	public function prime_status_counts_cache() {
-		// Perfromance note
+		// Performance note: current listings architecture limits us in isolation of wp_count_posts calls.
+		// For product page we can only isolate heavy SQL by warming up wp_count_posts  ache directly.
 		wp_cache_set( 'posts-product', (object) ProductUtil::get_count_for_type( 'product' ), 'counts' );
 	}
 
