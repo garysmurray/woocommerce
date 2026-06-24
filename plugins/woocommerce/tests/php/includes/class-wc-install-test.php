@@ -2,6 +2,7 @@
 declare( strict_types = 1 );
 
 use Automattic\WooCommerce\Admin\Notes\Note;
+use Automattic\WooCommerce\Caches\ProductCountCache;
 use Automattic\WooCommerce\Enums\ProductStatus;
 
 /**
@@ -251,6 +252,7 @@ class WC_Install_Test extends \WC_Unit_Test_Case {
 		$this->assertFalse( WC_Install::is_new_install(), 'We are not in a new install if the WC version is set and we have one or more products (even if the shop ID is not set).' );
 
 		$post_count = 0;
+		( new ProductCountCache() )->flush( 'product' );
 		$this->assertTrue( WC_Install::is_new_install(), 'We are in a new install if the WC version is set but the shop ID is not set and we do not have any products.' );
 
 		$counted_posts = false;
