@@ -54,6 +54,8 @@ class ProductCountCacheService {
 			add_action( 'deactivate_' . WC_PLUGIN_BASENAME, array( $this, 'unschedule_background_actions' ) );
 		}
 
+		// transition_post_status owns all mid-lifecycle status changes; woocommerce_new_product corrects for creation-time
+		// ephemeral transitions before the final status is committed; before_delete_post closes the lifecycle.
 		add_action( 'woocommerce_new_product', array( $this, 'update_on_new_product' ), 10, 2 );
 		add_action( 'transition_post_status', array( $this, 'update_on_product_status_changed' ), 10, 3 );
 		add_action( 'before_delete_post', array( $this, 'update_on_product_deleted' ), 10, 2 );
