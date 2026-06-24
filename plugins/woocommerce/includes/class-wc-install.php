@@ -21,7 +21,8 @@ use Automattic\WooCommerce\Admin\API\Reports\Orders\Stats\DataStore as OrdersSta
 use Automattic\WooCommerce\Utilities\FeaturesUtil;
 use Automattic\WooCommerce\Internal\Utilities\DatabaseUtil;
 use Automattic\WooCommerce\Internal\WCCom\ConnectionHelper as WCConnectionHelper;
-use Automattic\WooCommerce\Utilities\{OrderUtil, PluginUtil, ProductUtil};
+use Automattic\WooCommerce\Internal\Utilities\ProductUtil;
+use Automattic\WooCommerce\Utilities\{ OrderUtil, PluginUtil };
 
 defined( 'ABSPATH' ) || exit;
 
@@ -866,7 +867,7 @@ class WC_Install {
 		}
 
 		// Performance note: this is the original fallback. The store setup is incomplete, and even with a cold cache, we do not anticipate performance issues.
-		return -1 === wc_get_page_id( 'shop' ) && 0 === array_sum( ProductUtil::get_count_for_type( 'product' ) );
+		return -1 === wc_get_page_id( 'shop' ) && 0 === array_sum( wc_get_container()->get( ProductUtil::class )->get_counts_for_type( 'product' ) );
 	}
 
 	/**
@@ -2229,6 +2230,28 @@ $email_unsubscribes_table_schema;
 	}
 
 	/**
+	 * Get the list of Action Scheduler database tables.
+	 *
+	 * These are intentionally kept out of get_tables(): Action Scheduler is a shared library that
+	 * may be bundled by other active plugins, so its tables are only dropped during a full uninstall
+	 * when the site owner explicitly opts in by setting the WC_REMOVE_ACTION_SCHEDULER constant.
+	 *
+	 * @since 11.0.0
+	 *
+	 * @return string[] Action Scheduler table names.
+	 */
+	public static function get_action_scheduler_tables() {
+		global $wpdb;
+
+		return array(
+			"{$wpdb->prefix}actionscheduler_actions",
+			"{$wpdb->prefix}actionscheduler_claims",
+			"{$wpdb->prefix}actionscheduler_groups",
+			"{$wpdb->prefix}actionscheduler_logs",
+		);
+	}
+
+	/**
 	 * Create roles and capabilities.
 	 *
 	 * @return void
@@ -2491,6 +2514,35 @@ $email_unsubscribes_table_schema;
 		// Generate the metadata for the attachment, and update the database record.
 		$attach_data = wp_generate_attachment_metadata( $attach_id, $filename );
 		wp_update_attachment_metadata( $attach_id, $attach_data );
+	}
+
+	/**
+	 * Delete the placeholder image created by create_placeholder_image().
+	 *
+	 * Removes the attachment post, its metadata and the underlying file, but only when the stored
+	 * woocommerce_placeholder_image option still points at WooCommerce's own generated placeholder.
+	 * A custom image set by the merchant through the "Placeholder image" setting is left untouched to
+	 * avoid deleting merchant-owned media. The option itself is removed along with the rest of the
+	 * woocommerce_ options during uninstall.
+	 *
+	 * @since 11.0.0
+	 *
+	 * @return void
+	 */
+	public static function delete_placeholder_image() {
+		$placeholder_image = absint( get_option( 'woocommerce_placeholder_image', 0 ) );
+
+		if ( ! $placeholder_image ) {
+			return;
+		}
+
+		// Only delete WooCommerce's own generated placeholder, never a custom image the merchant may have set.
+		$attached_file = (string) get_post_meta( $placeholder_image, '_wp_attached_file', true );
+		if ( 'woocommerce-placeholder.webp' !== wp_basename( $attached_file ) ) {
+			return;
+		}
+
+		wp_delete_attachment( $placeholder_image, true );
 	}
 
 	/**

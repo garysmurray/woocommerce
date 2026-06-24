@@ -3,7 +3,7 @@
 namespace Automattic\WooCommerce\Internal\ProductAttributesLookup;
 
 use Automattic\WooCommerce\Enums\ProductStatus;
-use Automattic\WooCommerce\Utilities\ProductUtil;
+use Automattic\WooCommerce\Internal\Utilities\ProductUtil;
 use WP_CLI;
 
 /**
@@ -384,7 +384,7 @@ class CLIRunner {
 
 		$was_enabled = 'yes' === get_option( 'woocommerce_attribute_lookup_enabled' );
 
-		$products_count = ProductUtil::get_count_for_type( 'product' );
+		$products_count = wc_get_container()->get( ProductUtil::class )->get_counts_for_type( 'product' );
 		$products_count = ( $products_count[ ProductStatus::PUBLISH ] ?? 0 ) + ( $products_count[ ProductStatus::PENDING ] ?? 0 ) + ( $products_count[ ProductStatus::DRAFT ] ?? 0 );
 
 		if ( ! $this->lookup_data_store->regeneration_is_in_progress() || array_key_exists( 'from-scratch', $assoc_args ) ) {
