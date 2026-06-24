@@ -2,6 +2,7 @@
 declare( strict_types = 1 );
 
 use Automattic\WooCommerce\Admin\Notes\Note;
+use Automattic\WooCommerce\Enums\ProductStatus;
 
 /**
  * Class WC_Install_Test.
@@ -209,7 +210,7 @@ class WC_Install_Test extends \WC_Unit_Test_Case {
 
 		$supply_post_count = function () use ( &$post_count, &$counted_posts ) {
 			$counted_posts = true;
-			return $post_count;
+			return (object) array( ProductStatus::PUBLISH => $post_count );
 		};
 
 		$supply_coming_soon = function () use ( &$coming_soon ) {
