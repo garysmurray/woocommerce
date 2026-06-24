@@ -4,7 +4,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\Caches;
 
-use Automattic\WooCommerce\Utilities\ProductUtil;
+use Automattic\WooCommerce\Internal\Utilities\ProductUtil;
 use WC_Product;
 use WP_Post;
 
@@ -23,6 +23,13 @@ class ProductCountCacheService {
 	 * @var ProductCountCache
 	 */
 	private ProductCountCache $product_count_cache;
+
+	/**
+	 * ProductUtil instance.
+	 *
+	 * @var ProductUtil
+	 */
+	private ProductUtil $product_util;
 
 	/**
 	 * Array of product IDs with their last transitioned status as key value pairs.
@@ -47,6 +54,7 @@ class ProductCountCacheService {
 	 */
 	final public function init(): void {
 		$this->product_count_cache = new ProductCountCache();
+		$this->product_util        = wc_get_container()->get( ProductUtil::class );
 
 		add_action( 'action_scheduler_ensure_recurring_actions', array( $this, 'schedule_background_actions' ) );
 		add_action( self::BACKGROUND_EVENT_HOOK, array( $this, 'prime_cache_if_cold' ) );
@@ -71,7 +79,7 @@ class ProductCountCacheService {
 		// Cache warm-up is only effective when an object cache plugin is active, and the cache entry is missing.
 		if ( wp_using_ext_object_cache() && null === $this->product_count_cache->get( $product_type ) ) {
 			$this->product_count_cache->flush( $product_type );
-			ProductUtil::get_count_for_type( $product_type );
+			$this->product_util->get_counts_for_type( $product_type );
 		}
 	}
 

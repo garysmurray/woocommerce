@@ -8,7 +8,7 @@
 
 use Automattic\WooCommerce\Enums\ProductType;
 use Automattic\WooCommerce\Internal\CostOfGoodsSold\CostOfGoodsSoldController;
-use Automattic\WooCommerce\Utilities\ProductUtil;
+use Automattic\WooCommerce\Internal\Utilities\ProductUtil;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -78,9 +78,10 @@ class WC_Admin_List_Table_Products extends WC_Admin_List_Table {
 	 * @return void
 	 */
 	public function prime_status_counts_cache(): void {
-		// Performance note: The current listings architecture prevents us from isolating wp_count_posts calls.
-		// In the context of the product page, we can still isolate the underlying SQL by warming up the wp_count_posts cache.
-		wp_cache_set( 'posts-product', (object) ProductUtil::get_count_for_type( 'product' ), 'counts' );
+		// Performance note: the current listings architecture prevents us from isolating wp_count_posts calls.
+		// In the context of the products page, we can still isolate the underlying SQL by warming up the wp_count_posts cache.
+		$cache = (object) wc_get_container()->get( ProductUtil::class )->get_counts_for_type( 'product' );
+		wp_cache_set( 'posts-product', $cache, 'counts' );
 	}
 
 	/**
