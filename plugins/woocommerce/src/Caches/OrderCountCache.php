@@ -182,14 +182,14 @@ class OrderCountCache {
 		$cache_values  = wp_cache_get_multiple( $cache_keys );
 		$status_values = array();
 
+		$cache_key_prefix = $this->get_cache_key( $order_type, '' );
 		foreach ( $cache_values as $key => $value ) {
 			// Return null for the entire cache if any of the requested statuses are not found because they fell out of cache.
-			if ( $value === false ) {
+			if ( false === $value ) {
 				return null;
 			}
 
-			$order_status                   = str_replace( $this->get_cache_key( $order_type, '' ), '', $key );
-			$status_values[ $order_status ] = $value;
+			$status_values[ substr( $key, strlen( $cache_key_prefix ) ) ] = $value;
 		}
 
 		return $status_values;

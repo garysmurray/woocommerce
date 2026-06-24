@@ -158,13 +158,14 @@ class ProductCountCache {
 		$cache_values  = wp_cache_get_multiple( $cache_keys );
 		$status_values = array();
 
+		$cache_key_prefix = $this->get_cache_key( $product_type, '' );
 		foreach ( $cache_values as $key => $value ) {
 			// Return null for the entire cache if any of the requested statuses are not found because they fell out of cache.
 			if ( false === $value ) {
 				return null;
 			}
 
-			$status_values[ str_replace( $this->get_cache_key( $product_type, '' ), '', $key ) ] = $value;
+			$status_values[ substr( $key, strlen( $cache_key_prefix ) ) ] = $value;
 		}
 
 		return $status_values;
