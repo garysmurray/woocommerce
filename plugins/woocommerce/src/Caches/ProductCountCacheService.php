@@ -60,8 +60,7 @@ class ProductCountCacheService {
 	}
 
 	/**
-	 * Keeps the cache warm for a specific product type to maintain admin performance, especially after extended
-	 * periods of inactivity or when the cache has been cleared.
+	 * Primes the product count cache for a given post type when it is cold.
 	 *
 	 * @param string $product_type The product post type.
 	 * @return void
@@ -131,6 +130,7 @@ class ProductCountCacheService {
 	 * @param string  $new_status The new post status.
 	 * @param string  $old_status The previous post status.
 	 * @param WP_Post $post       The post object.
+	 *
 	 * @return void
 	 */
 	public function update_on_product_status_changed( string $new_status, string $old_status, WP_Post $post ): void {
@@ -172,6 +172,7 @@ class ProductCountCacheService {
 	 *
 	 * @param int     $post_id Post ID.
 	 * @param WP_Post $post    The post object.
+	 *
 	 * @return void
 	 */
 	public function update_on_product_deleted( int $post_id, WP_Post $post ): void {
