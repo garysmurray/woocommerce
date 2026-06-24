@@ -58,9 +58,11 @@ class WC_Admin_List_Table_Products extends WC_Admin_List_Table {
 		add_filter( 'views_edit-product', array( $this, 'product_views' ) );
 		add_filter( 'get_search_query', array( $this, 'search_label' ) );
 		add_filter( 'posts_clauses', array( $this, 'posts_clauses' ), 10, 2 );
-		add_filter( 'the_posts', array( $this, 'prime_thumbnail_caches' ), 10, 2 );
 		add_action( 'manage_product_posts_custom_column', array( $this, 'add_sample_product_badge' ), 9, 2 );
+
+		// Use hooks to prime various caches and improve products page performance.
 		add_action( 'load-edit.php', array( $this, 'prime_status_counts_cache' ) );
+		add_filter( 'the_posts', array( $this, 'prime_thumbnail_caches' ), 10, 2 );
 
 		$cogs_controller              = wc_get_container()->get( CostOfGoodsSoldController::class );
 		$this->cogs_is_enabled        = $cogs_controller->feature_is_enabled();
@@ -68,14 +70,16 @@ class WC_Admin_List_Table_Products extends WC_Admin_List_Table {
 	}
 
 	/**
-	 * Pre-warm the product status counts cache before the list table renders.
+	 * Pre-warm the wp_count_posts cache before the list table renders.
 	 *
+	 * @internal
 	 * @since 11.0.0
+	 *
 	 * @return void
 	 */
-	public function prime_status_counts_cache() {
-		// Performance note: current listings architecture limits us in isolation of wp_count_posts calls.
-		// For product page we can only isolate heavy SQL by warming up wp_count_posts cache directly.
+	public function prime_status_counts_cache(): void {
+		// Performance note: The current listings architecture prevents us from isolating wp_count_posts calls.
+		// In the context of the product page, we can still isolate the underlying SQL by warming up the wp_count_posts cache.
 		wp_cache_set( 'posts-product', (object) ProductUtil::get_count_for_type( 'product' ), 'counts' );
 	}
 
