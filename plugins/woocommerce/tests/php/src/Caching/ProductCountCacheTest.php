@@ -16,7 +16,7 @@ final class ProductCountCacheTest extends \WC_Unit_Test_Case {
 	 *
 	 * @var ProductCountCache
 	 */
-	private $product_cache;
+	private ProductCountCache $product_cache;
 
 	/**
 	 * Setup test.
