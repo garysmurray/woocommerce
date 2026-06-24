@@ -115,20 +115,20 @@ class ProductCountCacheService {
 	 * @return void
 	 */
 	public function update_on_new_product( int $product_id, WC_Product $product ): void {
-		// If transition_post_status already tracked this product, its counts are accurate.
-		// Apply any pending initial-status correction (errant decrement when cache was cold during step 1)
-		// then stop — do not attempt a second increment based on the in-memory status, which may differ
-		// from the actual DB status after a mid-creation wp_update_post call.
+		// transition_post_status already counted this product — reverse any errant decrement from a cold step 1 and stop.
+		// In-memory status may diverge from DB after a mid-creation wp_update_post; do not increment here.
 		if ( isset( $this->product_statuses[ $product_id ] ) ) {
 			if ( isset( $this->initial_product_statuses[ $product_id ] ) ) {
-				$this->product_count_cache->increment( 'product', $this->initial_product_statuses[ $product_id ] );
+				$initial_status = $this->initial_product_statuses[ $product_id ];
 				unset( $this->initial_product_statuses[ $product_id ] );
+				if ( $this->product_count_cache->is_cached( 'product', $initial_status ) ) {
+					$this->product_count_cache->increment( 'product', $initial_status );
+				}
 			}
 			return;
 		}
 
-		// transition_post_status never ran for this product (cache was fully cold throughout creation).
-		// Increment the in-memory status as the first and only count for this new product.
+		// Cache was cold throughout creation — transition_post_status never fired; use in-memory status as the sole count.
 		$product_status = $product->get_status();
 		if ( ! $this->product_count_cache->is_cached( 'product', $product_status ) ) {
 			return;
@@ -171,9 +171,8 @@ class ProductCountCacheService {
 			$this->product_count_cache->increment( 'product', $new_status );
 		}
 
-		// Set the initial product status in case this is a new product and the previous status should not be decremented.
-		// Only applies when this is the first transition seen for this product: if $previously_tracked is true, an earlier
-		// transition_post_status already counted the old status, so the decrement here is legitimate and needs no reversal.
+		// Record old status for new-product correction only on the first transition seen for this product.
+		// If $previously_tracked, an earlier transition already counted the old status — decrement is legitimate.
 		if ( ! $previously_tracked && ! isset( $this->initial_product_statuses[ $product_id ] ) && $was_decremented ) {
 			$this->initial_product_statuses[ $product_id ] = $old_status;
 		} elseif ( ( $this->initial_product_statuses[ $product_id ] ?? null ) === $new_status ) {
@@ -195,8 +194,11 @@ class ProductCountCacheService {
 
 		// Reverse any errant decrement from a mid-creation status transition that update_on_new_product will never get to correct.
 		if ( isset( $this->initial_product_statuses[ $post_id ] ) ) {
-			$this->product_count_cache->increment( 'product', $this->initial_product_statuses[ $post_id ] );
+			$initial_status = $this->initial_product_statuses[ $post_id ];
 			unset( $this->initial_product_statuses[ $post_id ] );
+			if ( $this->product_count_cache->is_cached( 'product', $initial_status ) ) {
+				$this->product_count_cache->increment( 'product', $initial_status );
+			}
 		}
 
 		$product_status = $post->post_status;
