@@ -189,7 +189,8 @@ class OrderCountCache {
 				return null;
 			}
 
-			$status_values[ substr( $key, strlen( $cache_key_prefix ) ) ] = $value;
+			$status                   = substr( $key, strlen( $cache_key_prefix ) );
+			$status_values[ $status ] = $value;
 		}
 
 		return $status_values;
