@@ -48,26 +48,13 @@ class ProductCountCacheService {
 	final public function init(): void {
 		$this->product_count_cache = new ProductCountCache();
 
-		// Scheduling: keep the cache warm via Action Scheduler.
 		add_action( 'action_scheduler_ensure_recurring_actions', array( $this, 'schedule_background_actions' ) );
 		add_action( self::BACKGROUND_EVENT_HOOK, array( $this, 'prime_cache_if_cold' ) );
 		if ( defined( 'WC_PLUGIN_BASENAME' ) ) {
 			add_action( 'deactivate_' . WC_PLUGIN_BASENAME, array( $this, 'unschedule_background_actions' ) );
 		}
 
-		// WooCommerce product hooks: complement transition_post_status for brand-new products whose
-		// old_status is 'new' (never cached) and would otherwise miss the initial count increment.
-		// Not needed: woocommerce_update_product (status changes go through transition_post_status),
-		// woocommerce_trash_product (fires after wp_trash_post which already fires transition_post_status),
-		// woocommerce_before_delete_product (fires before wp_delete_post which fires before_delete_post),
-		// woocommerce_delete_product (fires after deletion — post gone, status unreadable).
 		add_action( 'woocommerce_new_product', array( $this, 'update_on_new_product' ), 10, 2 );
-
-		// WordPress post hooks: cover all status changes and permanent deletions regardless of whether
-		// they originate from the WC product API or direct WP post operations.
-		// Not needed: trashed_post/untrashed_post (both fire after transition_post_status — already covered),
-		// save_post_product (status changes fire transition_post_status within wp_insert_post — covered),
-		// deleted_post (fires after deletion — post gone, status unreadable; before_delete_post is used instead).
 		add_action( 'transition_post_status', array( $this, 'update_on_product_status_changed' ), 10, 3 );
 		add_action( 'before_delete_post', array( $this, 'update_on_product_deleted' ), 10, 2 );
 	}
